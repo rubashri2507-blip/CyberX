@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberX | Digital Security Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* ── Hacker Speech Bubble ── */
+    #hackerSpeech {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 10, 20, 0.92);
+      border: 1px solid rgba(0, 255, 204, 0.5);
+      border-radius: 10px;
+      padding: 12px 18px;
+      width: 320px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: #00ffcc;
+      line-height: 1.6;
+      box-shadow: 0 0 24px rgba(0, 255, 204, 0.2), inset 0 0 12px rgba(0, 255, 204, 0.04);
+      opacity: 0;
+      z-index: 20;
+      pointer-events: none;
+      text-shadow: 0 0 8px rgba(0, 255, 204, 0.6);
+    }
+
+    #hackerSpeech::after {
+      content: '';
+      position: absolute;
+      bottom: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 9px solid transparent;
+      border-top-color: rgba(0, 255, 204, 0.5);
+      border-bottom: 0;
+    }
+
+    #hackerSpeech .speech-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 13px;
+      background: #00ffcc;
+      margin-left: 2px;
+      vertical-align: middle;
+      animation: blinkCursor 0.7s step-end infinite;
+    }
+
+    @keyframes blinkCursor { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── Hacker Visual ── */
+    .hacker-visual {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 420px;
+      min-width: 320px;
+      z-index: 2;
+    }
+
+    .hacker-svg-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      filter: drop-shadow(0 0 32px rgba(0, 255, 204, 0.18));
+      will-change: transform;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 10%; width: 80%; height: 2px;
+      background: linear-gradient(90deg, transparent, #00ffcc88, #00ffcccc, #00ffcc88, transparent);
+      border-radius: 2px; top: 20%;
+      animation: scanSweep 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes scanSweep {
+      0%   { top: 12%; opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { top: 88%; opacity: 0; }
+    }
+
+    .code-tag {
+      position: absolute;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: #00ffcc;
+      background: rgba(0,255,204,0.08);
+      border: 1px solid rgba(0,255,204,0.25);
+      border-radius: 4px;
+      padding: 3px 8px;
+      white-space: nowrap;
+      animation: floatTag 4s ease-in-out infinite;
+      opacity: 0.85;
+    }
+
+    .code-tag:nth-child(2) { top: 8%;    left: -14%; animation-delay: 0s; }
+    .code-tag:nth-child(3) { top: 30%;   right: -18%; animation-delay: 0.9s; }
+    .code-tag:nth-child(4) { bottom: 22%; left: -16%; animation-delay: 1.8s; }
+    .code-tag:nth-child(5) { bottom: 6%;  right: -12%; animation-delay: 2.7s; }
+
+    @keyframes floatTag {
+      0%,100% { transform: translateY(0px); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+
+    .hero-content { flex: 1 1 380px; min-width: 300px; }
+
+    .hero-right-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      flex: 0 0 auto;
+    }
+
+    @media (max-width: 900px) {
+      .hacker-visual { flex: 0 0 260px; min-width: 220px; }
+      .code-tag { display: none; }
+      .hero-right-col { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+      #hackerSpeech { width: 220px; font-size: 10px; }
+    }
+
+    @media (max-width: 640px) {
+      .hero { flex-direction: column; }
+      .hacker-visual { max-width: 280px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progressBar"></div>
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+<canvas id="particleCanvas"></canvas>
+
+<!-- NAVBAR -->
+<header class="navbar" id="navbar">
+  <div class="logo">
+    <span class="logo-text">CYBER<span class="logo-accent">X</span></span>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <nav id="navMenu">
+    <a href="#tools"  class="nav-link"><span class="nav-num"></span>Tools</a>
+    <a href="#about"  class="nav-link"><span class="nav-num"></span>About</a>
+    <a href="#kit"    class="nav-link"><span class="nav-num"></span>Kit</a>
+    <a href="#me"     class="nav-link"><span class="nav-num"></span>Contact</a>
+    <a href="#tools"  class="nav-cta">Get Protected →</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      <span>CYBERSECURITY AWARENESS PLATFORM</span>
+    </div>
+
+    <h1 class="hero-title">
+      <span class="line-reveal">Protect Your</span>
+      <span class="line-reveal delay-1">Digital <span class="glitch" data-text="Life.">Life.</span></span>
+    </h1>
+
+    <p class="hero-sub fade-up delay-2">
+      Your all-in-one toolkit for spotting phishing, checking passwords,
+      analyzing threats — and staying one step ahead of hackers.
+    </p>
+
+    <div class="hero-actions fade-up delay-3">
+      <a href="#tools" class="btn-primary">
+        <span>Explore Tools</span>
+        <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+      <a href="#about" class="btn-ghost">Learn More</a>
+    </div>
+
+    <div class="hero-stats fade-up delay-4">
+      <div class="stat">
+        <span class="stat-num" data-target="6">0</span>
+        <span class="stat-label">Security Tools</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num" data-target="100">0</span><span class="stat-suffix">%</span>
+        <span class="stat-label">Free & Open</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num" data-target="0">0</span>
+        <span class="stat-label">Data Stored</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column: Hacker Visual -->
+  <div class="hero-right-col">
+    <div class="hacker-visual" id="hackerVisual">
+
+      <!-- Speech bubble -->
+      <div id="hackerSpeech"><span id="speechText"></span><span class="speech-cursor"></span></div>
+
+      <span class="code-tag">Exploit</span>
+      <span class="code-tag">Breach</span>
+      <span class="code-tag">SSH -i key.pem</span>
+      <span class="code-tag">{'>'} root@shell</span>
+      <div class="scan-line"></div>
+
+      <div class="hacker-svg-wrap" id="hackerSvgWrap">
+        <svg viewBox="0 0 380 520" xmlns="http://www.w3.org/2000/svg" width="100%">
+          <defs>
+            <radialGradient id="screenGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stop-color="#00ffcc" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#00ffcc" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="hoodieGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%"   stop-color="#0f172a"/>
+              <stop offset="100%" stop-color="#1e293b"/>
+            </linearGradient>
+            <radialGradient id="faceGrad" cx="50%" cy="40%" r="55%">
+              <stop offset="0%"   stop-color="#1e293b"/>
+              <stop offset="100%" stop-color="#0a0f1a"/>
+            </radialGradient>
+            <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%"   stop-color="#0a1628"/>
+              <stop offset="100%" stop-color="#050d1a"/>
+            </linearGradient>
+            <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <clipPath id="screenClip">
+              <rect x="72" y="340" width="236" height="142" rx="8"/>
+            </clipPath>
+          </defs>
+
+          <!-- Ambient floor glow -->
+          <ellipse cx="190" cy="500" rx="130" ry="18" fill="#00ffcc" opacity="0.06"/>
+
+          <!-- Desk -->
+          <rect x="50" y="460" width="280" height="14" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+          <rect x="80" y="474" width="10" height="40" rx="2" fill="#1e293b"/>
+          <rect x="290" y="474" width="10" height="40" rx="2" fill="#1e293b"/>
+
+          <!-- Monitor base -->
+          <rect x="172" y="450" width="36" height="12" rx="3" fill="#0f172a" stroke="#1e3a5f" stroke-width="1"/>
+          <rect x="160" y="458" width="60" height="6"  rx="2" fill="#1e293b"/>
+
+          <!-- Monitor frame -->
+          <rect x="68"  y="332" width="244" height="122" rx="10" fill="#0f172a" stroke="#1d4ed8" stroke-width="1.5"/>
+          <rect x="72"  y="336" width="236" height="114" rx="8"  fill="url(#screenGrad)" stroke="#1e40af" stroke-width="1"/>
+          <rect x="72"  y="336" width="236" height="114" rx="8"  fill="url(#screenGlow)"/>
+
+          <!-- Screen code -->
+          <g clip-path="url(#screenClip)" filter="url(#glow)">
+            <text x="84" y="358" font-family="monospace" font-size="9" fill="#00ffcc" opacity="0.9">root@darknet:~$ ./exploit.py --target 10.0.0.1</text>
+            <text x="84" y="370" font-family="monospace" font-size="9" fill="#38bdf8" opacity="0.8">[*] Scanning open ports...</text>
+            <text x="84" y="382" font-family="monospace" font-size="9" fill="#00ffcc" opacity="0.85">[+] Port 22 open  [+] Port 443 open</text>
+            <text x="84" y="394" font-family="monospace" font-size="9" fill="#f59e0b" opacity="0.8">[!] Vulnerability found: CVE-2024-1234</text>
+            <text x="84" y="406" font-family="monospace" font-size="9" fill="#00ffcc" opacity="0.9">[*] Injecting payload...</text>
+            <text x="84" y="418" font-family="monospace" font-size="9" fill="#4ade80" opacity="0.85">[+] Shell established. Access granted.</text>
+            <rect x="84" y="424" width="6" height="9" rx="1" fill="#00ffcc" opacity="0.9">
+              <animate attributeName="opacity" values="0.9;0;0.9" dur="1.1s" repeatCount="indefinite"/>
+            </rect>
+          </g>
+
+          <!-- Keyboard -->
+          <rect x="98" y="462" width="184" height="20" rx="4" fill="#0f172a" stroke="#1e3a5f" stroke-width="1"/>
+          <g fill="#1e293b" stroke="#334155" stroke-width="0.5">
+            <rect x="103" y="465" width="8" height="5" rx="1"/>
+            <rect x="113" y="465" width="8" height="5" rx="1"/>
+            <rect x="123" y="465" width="8" height="5" rx="1"/>
+            <rect x="133" y="465" width="8" height="5" rx="1"/>
+            <rect x="143" y="465" width="8" height="5" rx="1"/>
+            <rect x="153" y="465" width="8" height="5" rx="1"/>
+            <rect x="163" y="465" width="8" height="5" rx="1"/>
+            <rect x="173" y="465" width="8" height="5" rx="1"/>
+            <rect x="183" y="465" width="8" height="5" rx="1"/>
+            <rect x="193" y="465" width="8" height="5" rx="1"/>
+            <rect x="203" y="465" width="8" height="5" rx="1"/>
+            <rect x="213" y="465" width="8" height="5" rx="1"/>
+            <rect x="223" y="465" width="8" height="5" rx="1"/>
+            <rect x="233" y="465" width="14" height="5" rx="1"/>
+            <rect x="103" y="473" width="12" height="5" rx="1"/>
+            <rect x="117" y="473" width="8" height="5" rx="1"/>
+            <rect x="127" y="473" width="8" height="5" rx="1"/>
+            <rect x="137" y="473" width="8" height="5" rx="1"/>
+            <rect x="147" y="473" width="8" height="5" rx="1"/>
+            <rect x="157" y="473" width="8" height="5" rx="1"/>
+            <rect x="167" y="473" width="8" height="5" rx="1"/>
+            <rect x="177" y="473" width="8" height="5" rx="1"/>
+            <rect x="187" y="473" width="8" height="5" rx="1"/>
+            <rect x="197" y="473" width="8" height="5" rx="1"/>
+            <rect x="207" y="473" width="8" height="5" rx="1"/>
+            <rect x="217" y="473" width="8" height="5" rx="1"/>
+            <rect x="227" y="473" width="18" height="5" rx="1"/>
+            <rect x="138" y="481" width="100" height="5" rx="1"/>
+          </g>
+
+          <!-- Hoodie body -->
+          <path d="M100 450 L100 310 Q100 290 120 285 L190 278 L260 285 Q280 290 280 310 L280 450 Z"
+                fill="url(#hoodieGrad)" stroke="#1e3a5f" stroke-width="1.5"/>
+          <path d="M155 380 Q155 420 190 425 Q225 420 225 380 Q225 365 190 362 Q155 365 155 380 Z"
+                fill="#0a0f1a" stroke="#1e293b" stroke-width="1" opacity="0.7"/>
+          <line x1="190" y1="285" x2="190" y2="365" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <!-- Arms -->
+          <path d="M100 310 Q70 330 60 370 Q55 400 70 420 Q80 440 95 445 L110 440 L115 400 Q110 370 120 340 L110 310 Z"
+                fill="url(#hoodieGrad)" stroke="#1e3a5f" stroke-width="1.5"/>
+          <path d="M280 310 Q310 330 320 370 Q325 400 310 420 Q300 440 285 445 L270 440 L265 400 Q270 370 260 340 L270 310 Z"
+                fill="url(#hoodieGrad)" stroke="#1e3a5f" stroke-width="1.5"/>
+
+          <!-- Hands -->
+          <ellipse cx="115" cy="455" rx="22" ry="10" fill="#1a2744" stroke="#2a4470" stroke-width="1"/>
+          <rect x="96"  y="452" width="7"  height="10" rx="3" fill="#1a2744" stroke="#2a4470" stroke-width="0.8"/>
+          <rect x="104" y="450" width="7"  height="12" rx="3" fill="#1a2744" stroke="#2a4470" stroke-width="0.8"/>
+          <rect x="112" y="449" width="7"  height="13" rx="3" fill="#1a2744" stroke="#2a4470" stroke-width="0.8"/>
+          <rect x="120" y="450" width="7"  height="12" rx="3" fill="#1a2744" stroke="#2a4470" stroke-width="0.8"/>
+          <rect x="128" y="452" width="6"  height="10" rx="3" fill="#1a2744" stroke="#2a4470" stroke-width="0.8"/>
+          <ellipse cx="265" cy="455" rx="22" ry="10" fill="#1a2744" stroke="#2a4470" stroke-width="1"/>
+          <rect x="249" y="452" width="7"  height="10" rx="3" fill="#1a2744" stroke="#2a4470" stroke-width="0.8"/>
+          <rect x="258" y="450" width="7"  height="12" rx="3" fill="#1a2744" stroke="#2a4470" stroke-width="0.8"/>
+          <rect x="266" y="449" width="7"  height="13" rx="3" fill="#1a2744" stroke="#2a4470" stroke-width="0.8"/>
+          <rect x="274" y="450" width="7"  height="12" rx="3" fill="#1a2744" stroke="#2a4470" stroke-width="0.8"/>
+          <rect x="282" y="452" width="6"  height="10" rx="3" fill="#1a2744" stroke="#2a4470" stroke-width="0.8"/>
+
+          <!-- Neck -->
+          <rect x="173" y="258" width="34" height="28" rx="6" fill="#1a2744"/>
+
+          <!-- Hood -->
+          <path d="M120 285 Q100 240 105 200 Q112 150 190 135 Q268 150 275 200 Q280 240 260 285 Z"
+                fill="#0a0f1a" stroke="#1e3a5f" stroke-width="1.5"/>
+          <path d="M135 285 Q118 248 122 210 Q128 165 190 152 Q252 165 258 210 Q262 248 245 285 Z"
+                fill="#050a12"/>
+
+          <!-- Face -->
+          <ellipse cx="190" cy="230" rx="46" ry="52" fill="url(#faceGrad)"/>
+          <ellipse cx="190" cy="240" rx="44" ry="48" fill="#00ffcc" opacity="0.04"/>
+
+          <!-- Eyes -->
+          <ellipse cx="170" cy="228" rx="8" ry="5" fill="#0a0f1a"/>
+          <ellipse cx="210" cy="228" rx="8" ry="5" fill="#0a0f1a"/>
+          <ellipse cx="170" cy="228" rx="4" ry="3" fill="#00ffcc" opacity="0.7" filter="url(#glow)">
+            <animate attributeName="opacity" values="0.7;0.3;0.7" dur="3s" repeatCount="indefinite"/>
+          </ellipse>
+          <ellipse cx="210" cy="228" rx="4" ry="3" fill="#00ffcc" opacity="0.7" filter="url(#glow)">
+            <animate attributeName="opacity" values="0.7;0.3;0.7" dur="3s" begin="0.4s" repeatCount="indefinite"/>
+          </ellipse>
+
+          <!-- Glasses -->
+          <rect x="155" y="223" width="26" height="12" rx="5" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.6"/>
+          <rect x="199" y="223" width="26" height="12" rx="5" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.6"/>
+          <line x1="181" y1="229" x2="199" y2="229" stroke="#38bdf8" stroke-width="1.5" opacity="0.6"/>
+          <line x1="155" y1="229" x2="148" y2="231" stroke="#38bdf8" stroke-width="1.5" opacity="0.5"/>
+          <line x1="225" y1="229" x2="232" y2="231" stroke="#38bdf8" stroke-width="1.5" opacity="0.5"/>
+
+          <!-- Mouth -->
+          <path d="M178 252 Q185 258 200 254" stroke="#334155" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+          <!-- Hood strings -->
+          <line x1="175" y1="285" x2="170" y2="360" stroke="#334155" stroke-width="1" stroke-dasharray="2,2"/>
+          <line x1="205" y1="285" x2="210" y2="360" stroke="#334155" stroke-width="1" stroke-dasharray="2,2"/>
+
+          <!-- Screen light on face -->
+          <ellipse cx="190" cy="255" rx="38" ry="20" fill="#00ffcc" opacity="0.035"/>
+
+          <!-- Matrix chars -->
+          <g font-family="monospace" font-size="10" fill="#00ffcc" opacity="0.4">
+            <text x="30"  y="200">01</text>
+            <text x="18"  y="280">10</text>
+            <text x="336" y="195">10</text>
+            <text x="348" y="280">01</text>
+            <text x="40"  y="370">11</text>
+            <text x="332" y="370">00</text>
+          </g>
+
+          <!-- WiFi icon -->
+          <g transform="translate(178,105)" stroke="#00ffcc" stroke-width="1.5" fill="none" opacity="0.5" filter="url(#glow)">
+            <path d="M6 18 Q6 10 12 6 Q18 10 18 18"/>
+            <path d="M3 21 Q3 6 12 0 Q21 6 21 21"/>
+            <circle cx="12" cy="20" r="2" fill="#00ffcc"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS: Password Strength + Generator -->
+<section id="tools" class="section tools-section">
+  <div class="section-header">
+    <h2>Password <span class="accent">Analyzer</span> & Generator</h2>
+    <p class="section-desc">Test your password strength and generate uncrackable ones instantly.</p>
+  </div>
+  <div class="tool-grid">
+    <div class="tool-card fade-in" data-tool="strength">
+      <div class="tool-card-header">
+        <div class="tool-icon">🔐</div>
+        <h3>Strength Checker</h3>
+      </div>
+      <div class="tool-body">
+        <div class="input-group">
+          <input type="password" id="password" placeholder="Enter your password…" oninput="checkStrength()" autocomplete="new-password"/>
+          <button type="button" class="eye-toggle" onclick="togglePwd('password', this)">👁</button>
+        </div>
+        <div class="strength-track">
+          <div class="strength-bar" id="strengthBar"></div>
+        </div>
+        <p id="strengthText" class="result-text"></p>
+        <ul class="strength-hints" id="strengthHints"></ul>
+      </div>
+    </div>
+
+    <div class="tool-card fade-in" data-tool="gen">
+      <div class="tool-card-header">
+        <div class="tool-icon">⚡</div>
+        <h3>Password Generator</h3>
+      </div>
+      <div class="tool-body">
+        <label class="slider-label">Length: <span id="lenDisplay">16</span></label>
+        <input type="range" id="length" min="6" max="64" value="16" oninput="document.getElementById('lenDisplay').textContent=this.value" class="range-slider"/>
+        <div class="checkbox-row">
+          <label><input type="checkbox" id="useUpper" checked> Uppercase</label>
+          <label><input type="checkbox" id="useLower" checked> Lowercase</label>
+          <label><input type="checkbox" id="useNums"  checked> Numbers</label>
+          <label><input type="checkbox" id="useSyms"  checked> Symbols</label>
+        </div>
+        <button class="tool-btn" onclick="generatePassword()">Generate</button>
+        <div class="output-box" id="passwordOutput" onclick="copyText('passwordOutput')">
+          <span class="output-placeholder">Click generate…</span>
+        </div>
+        <p class="copy-hint" id="copyHint"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS 2: Email Scam + URL Checker -->
+<section id="tools2" class="section tools2-section">
+  <div class="section-header">
+    <h2>Scam <span class="accent">Detector</span> Suite</h2>
+    <p class="section-desc">Paste suspicious content and get an instant risk assessment.</p>
+  </div>
+  <div class="tool-grid">
+    <div class="tool-card fade-in">
+      <div class="tool-card-header">
+        <div class="tool-icon">✉️</div>
+        <h3>Email Scam Analyzer</h3>
+      </div>
+      <div class="tool-body">
+        <textarea id="emailText" placeholder="Paste the suspicious email text here…"></textarea>
+        <button class="tool-btn" onclick="analyzeEmail()">Analyze Email</button>
+        <p id="emailResult" class="result-text"></p>
+        <ul id="warningList" class="warning-list"></ul>
+      </div>
+    </div>
+
+    <div class="tool-card fade-in">
+      <div class="tool-card-header">
+        <div class="tool-icon">🔗</div>
+        <h3>Phishing URL Check</h3>
+      </div>
+      <div class="tool-body">
+        <input type="text" id="url" placeholder="Paste URL here (e.g. http://bank-secure.xyz)" />
+        <button class="tool-btn" onclick="checkURL()">Check URL</button>
+        <p id="urlResult" class="result-text"></p>
+        <hr class="divider"/>
+        <h4 style="margin:16px 0 8px;color:#94a3b8;font-size:14px;">FAKE WEBSITE DETECTOR</h4>
+        <input type="text" id="siteInput" placeholder="Paste website URL to inspect…" />
+        <button class="tool-btn" onclick="detectWebsite()">Detect Site</button>
+        <p id="siteResult" class="result-text"></p>
+        <ul id="siteWarnings" class="warning-list"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS 3: WiFi Risk + Screen Time -->
+<section id="tools3" class="section tools3-section">
+  <div class="section-header">
+    <h2>WiFi Risk & <span class="accent">Screen Time</span> Tracker</h2>
+  </div>
+  <div class="tool-grid">
+    <div class="tool-card fade-in">
+      <div class="tool-card-header">
+        <div class="tool-icon">📡</div>
+        <h3>WiFi Risk Checker</h3>
+      </div>
+      <div class="tool-body">
+        <input type="text" id="wifiName" placeholder="WiFi network name…" />
+        <select id="securityType">
+          <option value="">Select security type</option>
+          <option value="open">Open (No Password)</option>
+          <option value="wep">WEP</option>
+          <option value="wpa2">WPA2</option>
+          <option value="wpa3">WPA3</option>
+          <option value="vpn">VPN</option>
+        </select>
+        <button class="tool-btn" onclick="checkWifi()">Check Risk</button>
+        <p id="wifiResult" class="result-text"></p>
+        <ul id="wifiTips" class="warning-list"></ul>
+      </div>
+    </div>
+
+    <div class="tool-card fade-in">
+      <div class="tool-card-header">
+        <div class="tool-icon">⏱️</div>
+        <h3>Screen Time Tracker</h3>
+      </div>
+      <div class="tool-body center">
+        <div class="circle-timer">
+          <svg class="timer-svg" viewBox="0 0 120 120">
+            <circle class="timer-bg" cx="60" cy="60" r="52"/>
+            <circle class="timer-fg" id="timerArc" cx="60" cy="60" r="52"
+                    stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+          </svg>
+          <div class="timer-text" id="timeDisplay">00:00</div>
+        </div>
+        <p id="warningMsg" class="result-text"></p>
+        <p class="clock-display" id="currentTime"></p>
+        <div class="timer-btns">
+          <button class="tool-btn green"  onclick="startTimer()">▶ Start</button>
+          <button class="tool-btn yellow" onclick="stopTimer()">⏸ Pause</button>
+          <button class="tool-btn red"    onclick="resetTimer()">↺ Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAKE LOGIN DEMO -->
+<section id="about" class="section about-section">
+  <div class="section-header">
+    <h2>Fake Login <span class="accent">Awareness</span></h2>
+    <p class="section-desc">This simulates how phishing login pages look. Never enter real credentials.</p>
+  </div>
+  <div class="login-demo fade-in">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">🔓</div>
+        <h3>Secure Portal Login</h3>
+        <p class="login-note">⚠️ This is a DEMO — not real</p>
+      </div>
+      <div class="login-body">
+        <div class="input-group">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="Try: admin"/>
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input type="password" id="loginPassword" placeholder="Try: 1234" autocomplete="off"/>
+            <button type="button" class="eye-toggle" onclick="togglePwd('loginPassword', this)">👁</button>
+          </div>
+        </div>
+        <button class="tool-btn full-width" onclick="fakeLogin()">Login</button>
+        <p id="loginMsg" class="result-text"></p>
+      </div>
+    </div>
+    <div class="login-tips">
+      <h4>🛡 Red Flags of Phishing Pages</h4>
+      <ul>
+        <li>URL doesn't match the real site</li>
+        <li>Padlock icon missing or broken</li>
+        <li>Urgent message asking for credentials</li>
+        <li>Generic branding or broken images</li>
+        <li>Unusual fonts or layout errors</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY KIT CARDS -->
+<section id="kit" class="section kit-section">
+  <div class="section-header">
+    <h2>Your <span class="accent">Security</span> Toolkit</h2>
+    <p class="section-desc">Quick reference cards for everyday digital safety.</p>
+  </div>
+  <div class="card-container">
+    <div class="card fade-in">
+      <div class="card-icon">🔑</div>
+      <h3>Password Tips</h3>
+      <ul>
+        <li>12+ characters minimum</li>
+        <li>Mix letters, numbers, symbols</li>
+        <li>Never reuse passwords</li>
+        <li>Use a password manager</li>
+      </ul>
+    </div>
+    <div class="card fade-in">
+      <div class="card-icon">✉️</div>
+      <h3>Email Safety</h3>
+      <ul>
+        <li>Check sender's real email</li>
+        <li>Hover links before clicking</li>
+        <li>No bank asks for passwords</li>
+        <li>Report suspicious emails</li>
+      </ul>
+    </div>
+    <div class="card fade-in">
+      <div class="card-icon">📡</div>
+      <h3>WiFi Security</h3>
+      <ul>
+        <li>Avoid public WiFi for banking</li>
+        <li>Use a VPN when traveling</li>
+        <li>Prefer WPA3 networks</li>
+        <li>Forget unused networks</li>
+      </ul>
+    </div>
+    <div class="card fade-in">
+      <div class="card-icon">🖥️</div>
+      <h3>Device Hygiene</h3>
+      <ul>
+        <li>Enable 2FA everywhere</li>
+        <li>Keep software updated</li>
+        <li>Lock screen after 30 secs</li>
+        <li>Back up data regularly</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / CONTACT -->
+<section id="me" class="section me-section">
+  <div class="section-header">
+    <h2>Built with <span class="accent">Purpose</span></h2>
+  </div>
+  <div class="about-grid fade-in">
+    <div class="about-text">
+      <p>
+        CyberX is a free, open-source cybersecurity awareness platform.
+        Every tool runs entirely in your browser — no data is ever stored or sent to any server.
+      </p>
+      <p>
+        Built to educate everyday users about the most common digital threats
+        they face: phishing, weak passwords, rogue WiFi, and more.
+      </p>
+      <div class="social-row">
+        <a href="http://github.com/rubashri2507-blip" class="social-btn">GitHub</a>
+        <a href="http://linkedin.com/in/ruba-shri"    class="social-btn">LinkedIn</a>
+      </div>
+    </div>
+    <div class="about-badge">
+      <div class="badge-ring">
+        <span>100% CLIENT-SIDE</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <span class="logo-text">CYBER<span class="logo-accent">X</span></span>
+    </div>
+    <p class="footer-copy">© 2026 CyberX · All tools are for educational purposes only.</p>
+    <p class="footer-links">
+      <a href="#home">Home</a> · <a href="#tools">Tools</a> · <a href="#kit">Kit</a>
+    </p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+
+<script>
+/* ══════════════════════════════════════════════
+   HACKER SPEECH SYSTEM  (6s delay after load)
+══════════════════════════════════════════════ */
+(function () {
+  const lines = [
+    "Access breached. Your system is mine now.",
+    "Every file, every secret — already in my hands.",
+    "I slipped past your defenses like a ghost.",
+    "Firewall down. I'm inside.",
+    "Your data came with me. All of it.",
+    "Your security failed. I've taken everything worth taking.",
+    "No alarms. No traces. Just me — and your data.",
+    "Root access granted. You never even noticed.",
+    "Encryption? I broke it in seconds.",
+    "Your passwords are a joke. I cracked them all.",
+    "I was in before you even opened your browser.",
+    "System compromised. Game over.",
+  ];
+
+  let lineIndex    = 0;
+  let charIndex    = 0;
+  let typingTimer  = null;
+  let pauseTimer   = null;
+
+  const bubble    = document.getElementById('hackerSpeech');
+  const textEl    = document.getElementById('speechText');
+
+  /* ── Web Audio: generate a soft keystroke click ── */
+  const AudioCtx  = window.AudioContext || window.webkitAudioContext;
+  let   audioCtx  = null;
+
+  function initAudio() {
+    if (!audioCtx && AudioCtx) audioCtx = new AudioCtx();
+  }
+
+  function playClick() {
+    if (!audioCtx) return;
+    try {
+      const buf  = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.04, audioCtx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.008));
+      }
+      const src  = audioCtx.createBufferSource();
+      const gain = audioCtx.createGain();
+      gain.gain.value = 0.06;
+      src.buffer = buf;
+      src.connect(gain);
+      gain.connect(audioCtx.destination);
+      src.start();
+    } catch (_) {}
+  }
+
+  function playEndSound() {
+    if (!audioCtx) return;
+    try {
+      const osc  = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    } catch (_) {}
+  }
+
+  function typeChar() {
+    const line = lines[lineIndex];
+    if (charIndex < line.length) {
+      textEl.textContent = line.slice(0, charIndex + 1);
+      charIndex++;
+      playClick();
+      typingTimer = setTimeout(typeChar, 38 + Math.random() * 30);
+    } else {
+      /* Finished typing — pause, then next line */
+      playEndSound();
+      pauseTimer = setTimeout(() => {
+        lineIndex  = (lineIndex + 1) % lines.length;
+        charIndex  = 0;
+        textEl.textContent = '';
+        typingTimer = setTimeout(typeChar, 200);
+      }, 2400);
+    }
+  }
+
+  function startSpeech() {
+    initAudio();
+    gsap.to(bubble, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' });
+    typeChar();
+  }
+
+  /* ── GSAP hacker entry + animations ── */
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const hackerEl = document.getElementById('hackerVisual');
+    const svgWrap  = document.getElementById('hackerSvgWrap');
+
+    if (hackerEl) {
+      /* Entry: slide down from above */
+      gsap.fromTo(hackerEl,
+        { y: -120, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.4, ease: 'power3.out', delay: 0.5 }
+      );
+
+      /* Idle float */
+      gsap.to(hackerEl, {
+        y: '+=12', duration: 2.8, ease: 'sine.inOut',
+        yoyo: true, repeat: -1, delay: 2.0
+      });
+
+      /* Scroll-out */
+      ScrollTrigger.create({
+        trigger: '#home',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1.2,
+        onUpdate: (self) => {
+          const p = self.progress;
+          gsap.set(hackerEl, { y: p * 160, opacity: 1 - Math.min(p * 1.6, 1), scale: 1 - p * 0.08 });
+        }
+      });
+
+      /* Code tags stagger */
+      gsap.fromTo('.code-tag',
+        { opacity: 0, x: -20 },
+        { opacity: 0.85, x: 0, duration: 0.7, stagger: 0.18, ease: 'power2.out', delay: 1.6 }
+      );
+
+      /* Mouse tilt on SVG */
+      if (svgWrap) {
+        document.addEventListener('mousemove', (e) => {
+          const rect = svgWrap.getBoundingClientRect();
+          const cx   = rect.left + rect.width  / 2;
+          const cy   = rect.top  + rect.height / 2;
+          const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+          const prox = Math.max(0, 1 - dist / 350);
+          gsap.to(svgWrap, {
+            rotateX: -((e.clientY - cy) / window.innerHeight) * 6 * prox,
+            rotateY:  ((e.clientX - cx) / window.innerWidth)  * 6 * prox,
+            duration: 0.5, ease: 'power2.out', transformPerspective: 600
+          });
+        });
+      }
+    }
+  }
+
+  /* ── Kick off speech 6 seconds after page load ── */
+  window.addEventListener('load', () => {
+    setTimeout(startSpeech, 6000);
+  });
+
+  /* Audio context unlock on first interaction (browser policy) */
+  document.addEventListener('click', initAudio, { once: true });
+  document.addEventListener('keydown', initAudio, { once: true });
+})();
+</script>
+
+</body>
+</html>
