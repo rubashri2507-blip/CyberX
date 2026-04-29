@@ -27,11 +27,12 @@
       font-size: 12px;
       color: #00ffcc;
       line-height: 1.6;
-      box-shadow: 0 0 24px rgba(0, 255, 204, 0.2), inset 0 0 12px rgba(0, 255, 204, 0.04);
+      box-shadow: 0 0 24px rgba(0,255,204,0.2), inset 0 0 12px rgba(0,255,204,0.04);
       opacity: 0;
+      transition: opacity 0.5s ease;
       z-index: 20;
       pointer-events: none;
-      text-shadow: 0 0 8px rgba(0, 255, 204, 0.6);
+      text-shadow: 0 0 8px rgba(0,255,204,0.6);
     }
 
     #hackerSpeech::after {
@@ -41,7 +42,7 @@
       left: 50%;
       transform: translateX(-50%);
       border: 9px solid transparent;
-      border-top-color: rgba(0, 255, 204, 0.5);
+      border-top-color: rgba(0,255,204,0.5);
       border-bottom: 0;
     }
 
@@ -72,7 +73,7 @@
       position: relative;
       width: 100%;
       max-width: 420px;
-      filter: drop-shadow(0 0 32px rgba(0, 255, 204, 0.18));
+      filter: drop-shadow(0 0 32px rgba(0,255,204,0.18));
       will-change: transform;
     }
 
@@ -106,7 +107,7 @@
       opacity: 0.85;
     }
 
-    .code-tag:nth-child(2) { top: 8%;    left: -14%; animation-delay: 0s; }
+    .code-tag:nth-child(2) { top: 8%;    left: -14%;  animation-delay: 0s; }
     .code-tag:nth-child(3) { top: 30%;   right: -18%; animation-delay: 0.9s; }
     .code-tag:nth-child(4) { bottom: 22%; left: -16%; animation-delay: 1.8s; }
     .code-tag:nth-child(5) { bottom: 6%;  right: -12%; animation-delay: 2.7s; }
@@ -226,7 +227,7 @@
       <span class="code-tag">Exploit</span>
       <span class="code-tag">Breach</span>
       <span class="code-tag">SSH -i key.pem</span>
-      <span class="code-tag">{'>'} root@shell</span>
+      <span class="code-tag">&gt; root@shell</span>
       <div class="scan-line"></div>
 
       <div class="hacker-svg-wrap" id="hackerSvgWrap">
@@ -305,17 +306,17 @@
             <rect x="223" y="465" width="8" height="5" rx="1"/>
             <rect x="233" y="465" width="14" height="5" rx="1"/>
             <rect x="103" y="473" width="12" height="5" rx="1"/>
-            <rect x="117" y="473" width="8" height="5" rx="1"/>
-            <rect x="127" y="473" width="8" height="5" rx="1"/>
-            <rect x="137" y="473" width="8" height="5" rx="1"/>
-            <rect x="147" y="473" width="8" height="5" rx="1"/>
-            <rect x="157" y="473" width="8" height="5" rx="1"/>
-            <rect x="167" y="473" width="8" height="5" rx="1"/>
-            <rect x="177" y="473" width="8" height="5" rx="1"/>
-            <rect x="187" y="473" width="8" height="5" rx="1"/>
-            <rect x="197" y="473" width="8" height="5" rx="1"/>
-            <rect x="207" y="473" width="8" height="5" rx="1"/>
-            <rect x="217" y="473" width="8" height="5" rx="1"/>
+            <rect x="117" y="473" width="8"  height="5" rx="1"/>
+            <rect x="127" y="473" width="8"  height="5" rx="1"/>
+            <rect x="137" y="473" width="8"  height="5" rx="1"/>
+            <rect x="147" y="473" width="8"  height="5" rx="1"/>
+            <rect x="157" y="473" width="8"  height="5" rx="1"/>
+            <rect x="167" y="473" width="8"  height="5" rx="1"/>
+            <rect x="177" y="473" width="8"  height="5" rx="1"/>
+            <rect x="187" y="473" width="8"  height="5" rx="1"/>
+            <rect x="197" y="473" width="8"  height="5" rx="1"/>
+            <rect x="207" y="473" width="8"  height="5" rx="1"/>
+            <rect x="217" y="473" width="8"  height="5" rx="1"/>
             <rect x="227" y="473" width="18" height="5" rx="1"/>
             <rect x="138" y="481" width="100" height="5" rx="1"/>
           </g>
@@ -686,37 +687,114 @@
 
 <script src="script.js"></script>
 
+<!-- ══════════════════════════════════════════════
+     GSAP ANIMATIONS + HACKER SPEECH SYSTEM
+     • 6s delay on first page load
+     • Stops typing + hides bubble when #home scrolls out of view
+     • Resumes (next line) when user scrolls back to #home
+══════════════════════════════════════════════ -->
 <script>
-/* ══════════════════════════════════════════════
-   HACKER SPEECH SYSTEM  (6s delay after load)
-══════════════════════════════════════════════ */
 (function () {
+
+  /* ─────────────────────────────────────────
+     GSAP setup
+  ───────────────────────────────────────── */
+  if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  const hackerEl = document.getElementById('hackerVisual');
+  const svgWrap  = document.getElementById('hackerSvgWrap');
+
+  if (hackerEl) {
+    /* Entry: slide down from above */
+    gsap.fromTo(hackerEl,
+      { y: -120, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1.4, ease: 'power3.out', delay: 0.5 }
+    );
+
+    /* Idle float */
+    gsap.to(hackerEl, {
+      y: '+=12', duration: 2.8, ease: 'sine.inOut',
+      yoyo: true, repeat: -1, delay: 2.0
+    });
+
+    /* Scroll-out: slide down + fade as hero leaves viewport */
+    ScrollTrigger.create({
+      trigger: '#home',
+      start: 'top top',
+      end: 'bottom top',
+      scrub: 1.2,
+      onUpdate: (self) => {
+        const p = self.progress;
+        gsap.set(hackerEl, {
+          y:       p * 160,
+          opacity: 1 - Math.min(p * 1.6, 1),
+          scale:   1 - p * 0.08
+        });
+      }
+    });
+
+    /* Code tags staggered entry */
+    gsap.fromTo('.code-tag',
+      { opacity: 0, x: -20 },
+      { opacity: 0.85, x: 0, duration: 0.7, stagger: 0.18, ease: 'power2.out', delay: 1.6 }
+    );
+  }
+
+  /* Mouse proximity tilt on SVG */
+  if (svgWrap) {
+    document.addEventListener('mousemove', (e) => {
+      const rect = svgWrap.getBoundingClientRect();
+      const cx   = rect.left + rect.width  / 2;
+      const cy   = rect.top  + rect.height / 2;
+      const prox = Math.max(0, 1 - Math.hypot(e.clientX - cx, e.clientY - cy) / 350);
+      gsap.to(svgWrap, {
+        rotateX: -((e.clientY - cy) / window.innerHeight) * 6 * prox,
+        rotateY:  ((e.clientX - cx) / window.innerWidth)  * 6 * prox,
+        duration: 0.5, ease: 'power2.out', transformPerspective: 600
+      });
+    });
+  }
+
+  /* ─────────────────────────────────────────
+     HACKER SPEECH SYSTEM
+  ───────────────────────────────────────── */
   const lines = [
     "Access breached. Your system is mine now.",
     "Every file, every secret — already in my hands.",
     "I slipped past your defenses like a ghost.",
-    "Firewall down. I'm inside.",
+    "Firewall down. I'm inside — and you never saw it coming.",
     "Your data came with me. All of it.",
     "Your security failed. I've taken everything worth taking.",
     "No alarms. No traces. Just me — and your data.",
     "Root access granted. You never even noticed.",
-    "Encryption? I broke it in seconds.",
+    "Encryption? I broke it before your coffee cooled.",
     "Your passwords are a joke. I cracked them all.",
-    "I was in before you even opened your browser.",
+    "I was already in before you opened your browser.",
     "System compromised. Game over.",
+    "You trusted the network. I owned the network.",
+    "Every keystroke you typed? I have the logs.",
+    "Your backup failed. I made sure of that.",
+    "Two-factor auth. Cute. I bypassed it in forty seconds.",
+    "You left one port open. That's all I needed.",
+    "I don't attack loud. I move quiet, and I move fast.",
   ];
 
-  let lineIndex    = 0;
-  let charIndex    = 0;
-  let typingTimer  = null;
-  let pauseTimer   = null;
+  let lineIndex   = 0;
+  let charIndex   = 0;
+  let typingTimer = null;
+  let pauseTimer  = null;
+  let isRunning   = false;   /* typing loop active? */
+  let isOnHome    = true;    /* #home currently visible? */
+  let started     = false;   /* 6s initial delay fired? */
 
-  const bubble    = document.getElementById('hackerSpeech');
-  const textEl    = document.getElementById('speechText');
+  const bubble  = document.getElementById('hackerSpeech');
+  const textEl  = document.getElementById('speechText');
+  if (!bubble || !textEl) return;
 
-  /* ── Web Audio: generate a soft keystroke click ── */
-  const AudioCtx  = window.AudioContext || window.webkitAudioContext;
-  let   audioCtx  = null;
+  /* ── Web Audio: soft keystroke click ── */
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx   = null;
 
   function initAudio() {
     if (!audioCtx && AudioCtx) audioCtx = new AudioCtx();
@@ -727,12 +805,11 @@
     try {
       const buf  = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.04, audioCtx.sampleRate);
       const data = buf.getChannelData(0);
-      for (let i = 0; i < data.length; i++) {
+      for (let i = 0; i < data.length; i++)
         data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.008));
-      }
       const src  = audioCtx.createBufferSource();
       const gain = audioCtx.createGain();
-      gain.gain.value = 0.06;
+      gain.gain.value = 0.05;
       src.buffer = buf;
       src.connect(gain);
       gain.connect(audioCtx.destination);
@@ -740,112 +817,107 @@
     } catch (_) {}
   }
 
-  function playEndSound() {
+  function playEndChime() {
     if (!audioCtx) return;
     try {
       const osc  = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+      osc.frequency.setValueAtTime(660, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(330, audioCtx.currentTime + 0.18);
+      gain.gain.setValueAtTime(0.07, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.15);
+      osc.stop(audioCtx.currentTime + 0.18);
     } catch (_) {}
   }
 
+  /* ── Type one character, then schedule the next ── */
   function typeChar() {
+    if (!isRunning) return;
     const line = lines[lineIndex];
     if (charIndex < line.length) {
       textEl.textContent = line.slice(0, charIndex + 1);
       charIndex++;
       playClick();
-      typingTimer = setTimeout(typeChar, 38 + Math.random() * 30);
+      typingTimer = setTimeout(typeChar, 36 + Math.random() * 28);
     } else {
-      /* Finished typing — pause, then next line */
-      playEndSound();
+      /* Line complete — short pause, then move to the next line */
+      playEndChime();
       pauseTimer = setTimeout(() => {
-        lineIndex  = (lineIndex + 1) % lines.length;
-        charIndex  = 0;
+        if (!isRunning) return;
+        lineIndex = (lineIndex + 1) % lines.length;
+        charIndex = 0;
         textEl.textContent = '';
-        typingTimer = setTimeout(typeChar, 200);
-      }, 2400);
+        typingTimer = setTimeout(typeChar, 300);
+      }, 2600);
     }
   }
 
+  /* ── Show bubble & begin typing (first call only) ── */
   function startSpeech() {
-    initAudio();
-    gsap.to(bubble, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' });
+    if (isRunning) return;
+    isRunning = true;
+    bubble.style.opacity = '1';
     typeChar();
   }
 
-  /* ── GSAP hacker entry + animations ── */
-  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-    gsap.registerPlugin(ScrollTrigger);
-
-    const hackerEl = document.getElementById('hackerVisual');
-    const svgWrap  = document.getElementById('hackerSvgWrap');
-
-    if (hackerEl) {
-      /* Entry: slide down from above */
-      gsap.fromTo(hackerEl,
-        { y: -120, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1.4, ease: 'power3.out', delay: 0.5 }
-      );
-
-      /* Idle float */
-      gsap.to(hackerEl, {
-        y: '+=12', duration: 2.8, ease: 'sine.inOut',
-        yoyo: true, repeat: -1, delay: 2.0
-      });
-
-      /* Scroll-out */
-      ScrollTrigger.create({
-        trigger: '#home',
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1.2,
-        onUpdate: (self) => {
-          const p = self.progress;
-          gsap.set(hackerEl, { y: p * 160, opacity: 1 - Math.min(p * 1.6, 1), scale: 1 - p * 0.08 });
-        }
-      });
-
-      /* Code tags stagger */
-      gsap.fromTo('.code-tag',
-        { opacity: 0, x: -20 },
-        { opacity: 0.85, x: 0, duration: 0.7, stagger: 0.18, ease: 'power2.out', delay: 1.6 }
-      );
-
-      /* Mouse tilt on SVG */
-      if (svgWrap) {
-        document.addEventListener('mousemove', (e) => {
-          const rect = svgWrap.getBoundingClientRect();
-          const cx   = rect.left + rect.width  / 2;
-          const cy   = rect.top  + rect.height / 2;
-          const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
-          const prox = Math.max(0, 1 - dist / 350);
-          gsap.to(svgWrap, {
-            rotateX: -((e.clientY - cy) / window.innerHeight) * 6 * prox,
-            rotateY:  ((e.clientX - cx) / window.innerWidth)  * 6 * prox,
-            duration: 0.5, ease: 'power2.out', transformPerspective: 600
-          });
-        });
-      }
-    }
+  /* ── Hide bubble & freeze all timers ── */
+  function stopSpeech() {
+    isRunning = false;
+    clearTimeout(typingTimer);
+    clearTimeout(pauseTimer);
+    bubble.style.opacity = '0';
   }
 
-  /* ── Kick off speech 6 seconds after page load ── */
+  /* ── Resume at the start of the next line ── */
+  function resumeSpeech() {
+    if (isRunning) return;
+    isRunning  = true;
+    lineIndex  = (lineIndex + 1) % lines.length;  /* pick a fresh line */
+    charIndex  = 0;
+    textEl.textContent = '';
+    bubble.style.opacity = '1';
+    typingTimer = setTimeout(typeChar, 400);
+  }
+
+  /* ── IntersectionObserver watches #home visibility ──
+     When less than 15% of #home is visible → stop.
+     When 15%+ returns → resume.                        */
+  const homeSection = document.getElementById('home');
+  if (homeSection && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !isOnHome) {
+            isOnHome = true;
+            if (started) resumeSpeech();
+          } else if (!entry.isIntersecting && isOnHome) {
+            isOnHome = false;
+            stopSpeech();
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    io.observe(homeSection);
+  }
+
+  /* ── Kick off 6 seconds after page fully loads ── */
   window.addEventListener('load', () => {
-    setTimeout(startSpeech, 6000);
+    setTimeout(() => {
+      started = true;
+      if (isOnHome) startSpeech();
+    }, 6000);
   });
 
-  /* Audio context unlock on first interaction (browser policy) */
-  document.addEventListener('click', initAudio, { once: true });
-  document.addEventListener('keydown', initAudio, { once: true });
+  /* Audio context requires a user gesture to unlock in most browsers */
+  ['click', 'keydown', 'touchstart'].forEach(evt =>
+    document.addEventListener(evt, initAudio, { once: true })
+  );
+
 })();
 </script>
 
